@@ -8,14 +8,16 @@
 #
 # Run 'make help' to see all available targets
 
-.PHONY: help docs fmt tffmt validate test test-terraform test-quick test-specific \
-        test-terraform-filter init plan deploy destroy upgrade clean \
-        security-scan lint pre-commit dev check ci-test info
+.PHONY: help docs fmt tffmt gofmt validate test tidy upgrade clean deploy init plan pre-commit security-scan \
+        test-terraform test-quick test-specific test-terraform-filter test-all \
+        lint dev check ci-test info
 
 # Default target
 .DEFAULT_GOAL := help
 
 # Variables
+TESTDIR := ./test
+EXAMPLE_DIR := ./examples/default
 example ?= default
 TEST ?= TestDefault
 FILE ?=
@@ -61,7 +63,21 @@ tffmt: ## Format Terraform files
 	@terraform fmt -recursive
 	@echo "$(COLOR_GREEN)Terraform files formatted!$(COLOR_RESET)"
 
-fmt: tffmt ## Format all files (Terraform)
+gofmt: ## Format Go test files
+	@echo "$(COLOR_YELLOW)Formatting Go files...$(COLOR_RESET)"
+	@cd $(TESTDIR) && go fmt
+	@echo "$(COLOR_GREEN)✓ Go files formatted$(COLOR_RESET)"
+
+fmt: tffmt gofmt ## Format all files (Terraform and Go)
+
+# =============================================================================
+# Dependencies
+# =============================================================================
+
+tidy: ## Tidy Go module dependencies
+	@echo "$(COLOR_YELLOW)Tidying Go dependencies...$(COLOR_RESET)"
+	@cd $(TESTDIR) && go mod tidy
+	@echo "$(COLOR_GREEN)✓ Go dependencies tidied$(COLOR_RESET)"
 
 # =============================================================================
 # Validation Targets
@@ -77,39 +93,47 @@ validate: ## Validate Terraform configuration
 # Testing Targets
 # =============================================================================
 
-test: fmt validate docs ## Run validation tests (plan-only, no deployment)
-	@echo "$(COLOR_BLUE)Running Terraform native tests...$(COLOR_RESET)"
-	@terraform test -verbose
-	@echo "$(COLOR_GREEN)All tests passed!$(COLOR_RESET)"
+test: tidy fmt docs ## Run all tests (Go-based Terratest)
+	@echo "$(COLOR_YELLOW)Running tests...$(COLOR_RESET)"
+	@cd $(TESTDIR) && go test -v --timeout=30m
+	@echo "$(COLOR_GREEN)✓ All tests passed$(COLOR_RESET)"
 
-test-terraform: ## Run Terraform native tests (requires Terraform >= 1.6.0)
-	@echo "$(COLOR_BLUE)Running Terraform native tests...$(COLOR_RESET)"
-	@terraform test -verbose
-	@echo "$(COLOR_GREEN)Tests completed!$(COLOR_RESET)"
+test-quick: ## Run tests without formatting and docs generation
+	@echo "$(COLOR_YELLOW)Running tests...$(COLOR_RESET)"
+	@cd $(TESTDIR) && go test -v --timeout=30m
 
-test-terraform-filter: ## Run specific Terraform test file (use: make test-terraform-filter FILE=tests/basic.tftest.hcl)
-	@echo "$(COLOR_BLUE)Running Terraform test: $(FILE)...$(COLOR_RESET)"
+test-specific: ## Run specific test (usage: make test-specific TEST=TestDefault)
+	@echo "$(COLOR_YELLOW)Running test: $(TEST)...$(COLOR_RESET)"
+	@cd $(TESTDIR) && go test -v -run $(TEST) --timeout=30m
+
+test-terraform: ## Run native Terraform tests (requires Terraform >= 1.6.0)
+	@echo "$(COLOR_YELLOW)Running Terraform native tests...$(COLOR_RESET)"
+	@terraform test -verbose
+	@echo "$(COLOR_GREEN)✓ All Terraform tests passed$(COLOR_RESET)"
+
+test-terraform-filter: ## Run specific Terraform test file (usage: make test-terraform-filter FILE=tests/basic.tftest.hcl)
+	@echo "$(COLOR_YELLOW)Running Terraform test: $(FILE)...$(COLOR_RESET)"
 	@terraform test -filter=$(FILE) -verbose
-	@echo "$(COLOR_GREEN)Test completed!$(COLOR_RESET)"
 
-test-quick: validate ## Quick test run without formatting and docs
-	@echo "$(COLOR_BLUE)Running quick tests...$(COLOR_RESET)"
-	@terraform test
-	@echo "$(COLOR_GREEN)Quick tests passed!$(COLOR_RESET)"
+test-all: tidy fmt docs test-terraform ## Run all tests (both Go and Terraform native)
+	@echo "$(COLOR_YELLOW)Running Go tests...$(COLOR_RESET)"
+	@cd $(TESTDIR) && go test -v --timeout=30m
+	@echo "$(COLOR_GREEN)========================================$(COLOR_RESET)"
+	@echo "$(COLOR_GREEN)✓ All tests passed (Go + Terraform)!$(COLOR_RESET)"
+	@echo "$(COLOR_GREEN)========================================$(COLOR_RESET)"
 
 # =============================================================================
-# Example Deployment Targets
+# Deployment
 # =============================================================================
 
-init: ## Initialize Terraform for examples
-	@echo "$(COLOR_BLUE)Initializing Terraform for example: $(example)...$(COLOR_RESET)"
-	@cd ./examples/$(example) && terraform init
-	@echo "$(COLOR_GREEN)Initialization complete!$(COLOR_RESET)"
+init: ## Initialize Terraform in example directory
+	@echo "$(COLOR_YELLOW)Initializing Terraform...$(COLOR_RESET)"
+	@cd $(EXAMPLE_DIR) && terraform init
+	@echo "$(COLOR_GREEN)✓ Terraform initialized$(COLOR_RESET)"
 
-plan: init ## Create Terraform plan for example
-	@echo "$(COLOR_BLUE)Creating plan for example: $(example)...$(COLOR_RESET)"
-	@cd ./examples/$(example) && terraform plan
-	@echo "$(COLOR_GREEN)Plan created!$(COLOR_RESET)"
+plan: init ## Create Terraform plan
+	@echo "$(COLOR_YELLOW)Creating Terraform plan...$(COLOR_RESET)"
+	@cd $(EXAMPLE_DIR) && terraform plan
 
 deploy: init ## Deploy example configuration
 	@echo "$(COLOR_YELLOW)Deploying example: $(example)...$(COLOR_RESET)"
