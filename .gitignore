@@ -1,0 +1,337 @@
+# =============================================================================
+# Terraform .gitignore
+# =============================================================================
+# Comprehensive ignore patterns for Terraform modules and Azure development
+
+# -----------------------------------------------------------------------------
+# 1. TERRAFORM FILES
+# -----------------------------------------------------------------------------
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files (NEVER commit state files - they may contain sensitive data)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# .tfplan files
+*.tfplan
+*tfplan*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Override files (used for local development overrides)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform RC files (may contain credentials)
+.terraformrc
+terraform.rc
+
+# Terraform lock file (consider keeping for modules, but often in .gitignore)
+# Uncomment if you want to regenerate lock files for each environment
+# .terraform.lock.hcl
+
+# -----------------------------------------------------------------------------
+# 2. SECURITY & CREDENTIALS
+# -----------------------------------------------------------------------------
+# Environment variables
+.env
+.env.*
+*.env
+
+# Azure credentials
+credentials.json
+service-principal.json
+.azure/
+
+# AWS credentials
+.aws/
+
+# Google Cloud credentials
+.gcloud/
+
+# SSH keys
+*.pem
+*.ppk
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+
+# SSL certificates
+*.pfx
+*.p12
+*.crt
+*.cer
+*.key
+
+# Secrets and passwords
+*secret*
+*password*
+*.credentials
+
+# -----------------------------------------------------------------------------
+# 3. TESTING
+# -----------------------------------------------------------------------------
+# Test cache
+.test-cache/
+test-cache/
+
+# Terraform test state
+terraform.test.tfstate
+terraform.test.tfstate.backup
+
+# Coverage reports
+coverage.*
+*.coverprofile
+
+# Test data
+.test-data/
+test-data/
+
+# Go test artifacts
+*.test
+*.out
+
+# Terratest cache
+.terratest-cache/
+
+# -----------------------------------------------------------------------------
+# 4. CI/CD
+# -----------------------------------------------------------------------------
+# GitHub Actions
+.github/secrets/
+
+# Terraform Cloud/Enterprise
+.terraform.d/
+*.sentinel
+
+# Checkov results
+checkov-report.*
+
+# TFLint cache
+.tflint.d/
+
+# Terraform docs temporary files
+.terraform-docs/
+
+# -----------------------------------------------------------------------------
+# 5. IDE & EDITOR FILES
+# -----------------------------------------------------------------------------
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# Claude Code
+.claude/settings.local.json
+
+# JetBrains IDEs (IntelliJ, PyCharm, WebStorm, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+out/
+
+# Vim
+*.swp
+*.swo
+*.swn
+*~
+.*.sw?
+
+# Emacs
+*~
+\#*\#
+.#*
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Atom
+.atom/
+
+# -----------------------------------------------------------------------------
+# 6. OPERATING SYSTEM FILES
+# -----------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# -----------------------------------------------------------------------------
+# 7. LOGS & TEMPORARY FILES
+# -----------------------------------------------------------------------------
+# Log files
+*.log
+logs/
+log/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archive files (often used for backups)
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# -----------------------------------------------------------------------------
+# 8. LANGUAGE-SPECIFIC
+# -----------------------------------------------------------------------------
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+env/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+
+# Go
+*.exe
+*.dll
+go.work
+go.work.sum
+vendor/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+package-lock.json
+yarn.lock
+
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+.bundle/
+vendor/bundle
+
+# -----------------------------------------------------------------------------
+# 9. CUSTOM PATTERNS (Project-Specific)
+# -----------------------------------------------------------------------------
+# Local scripts and development files
+*.local
+local/
+scratch/
+dev/
+.dev/
+
+# Notes and TODOs
+notes/
+TODO.md
+NOTES.md
+
+# -----------------------------------------------------------------------------
+# 10. NEGATIONS (Force Include These)
+# -----------------------------------------------------------------------------
+# Include example files
+!example.tfvars
+!examples/
+
+# Include test fixtures
+!test/fixtures/
+!tests/fixtures/
+
+# Include documentation
+!docs/
+!*.md
+
+# Include CI/CD configuration
+!.github/
+!.github/workflows/
+
+# Include licenses
+!LICENSE
+!LICENSE.md
+!LICENSE.txt

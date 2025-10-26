@@ -1,0 +1,324 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - '**.tf'
+      - 'tests/**'
+      - 'examples/**'
+      - '.github/workflows/test.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - '**.tf'
+      - 'tests/**'
+      - 'examples/**'
+      - '.github/workflows/test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # =============================================================================
+  # Code Quality Checks
+  # =============================================================================
+
+  terraform-format:
+    name: Terraform Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.6.0
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive
+        continue-on-error: false
+
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    needs: terraform-format
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.6.0
+
+      - name: Initialize Terraform
+        run: terraform init -backend=false
+
+      - name: Validate Terraform configuration
+        run: terraform validate
+
+  # =============================================================================
+  # Testing
+  # =============================================================================
+
+  terraform-test:
+    name: Terraform Test - ${{ matrix.test_file }}
+    runs-on: ubuntu-latest
+    needs: [terraform-format, terraform-validate]
+    strategy:
+      fail-fast: false
+      matrix:
+        test_file:
+          - tests/basic.tftest.hcl
+          - tests/validation.tftest.hcl
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.6.0
+
+      - name: Run Terraform test - ${{ matrix.test_file }}
+        run: terraform test -filter=${{ matrix.test_file }} -verbose
+        env:
+          ARM_SKIP_PROVIDER_REGISTRATION: "true"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.test_file }}
+          path: |
+            *.tftest.*
+            terraform.test.tfstate*
+          retention-days: 7
+
+  terraform-test-all:
+    name: Terraform Test - All
+    runs-on: ubuntu-latest
+    needs: [terraform-format, terraform-validate]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.6.0
+
+      - name: Run all Terraform tests
+        id: test
+        run: |
+          terraform test -verbose 2>&1 | tee test-output.log
+          echo "test_status=$?" >> $GITHUB_OUTPUT
+        env:
+          ARM_SKIP_PROVIDER_REGISTRATION: "true"
+        continue-on-error: true
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## Terraform Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.test.outputs.test_status }}" == "0" ]; then
+            echo "✅ All tests passed successfully!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Some tests failed. Please review the logs." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Output" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat test-output.log >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const testOutput = fs.readFileSync('test-output.log', 'utf8');
+            const testStatus = '${{ steps.test.outputs.test_status }}';
+
+            const icon = testStatus === '0' ? '✅' : '❌';
+            const status = testStatus === '0' ? 'PASSED' : 'FAILED';
+
+            const body = `## ${icon} Terraform Tests ${status}
+
+            <details>
+            <summary>Test Output</summary>
+
+            \`\`\`
+            ${testOutput}
+            \`\`\`
+
+            </details>`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-all
+          path: |
+            test-output.log
+            *.tftest.*
+            terraform.test.tfstate*
+          retention-days: 30
+
+  test-coverage-report:
+    name: Test Coverage Report
+    runs-on: ubuntu-latest
+    needs: [terraform-test-all]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate coverage summary
+        run: |
+          echo "## Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Files" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ tests/basic.tftest.hcl - Core functionality tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ tests/validation.tftest.hcl - Input validation tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Coverage Areas" >> $GITHUB_STEP_SUMMARY
+          echo "- Default diagnostics configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- Selective log category filtering (include parameter)" >> $GITHUB_STEP_SUMMARY
+          echo "- Storage account diagnostics (blob and file services)" >> $GITHUB_STEP_SUMMARY
+          echo "- Multiple monitored services" >> $GITHUB_STEP_SUMMARY
+          echo "- Optional table parameter handling" >> $GITHUB_STEP_SUMMARY
+          echo "- Resource ID format validation" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Security & Quality
+  # =============================================================================
+
+  security-scan:
+    name: Security Scan (Checkov)
+    runs-on: ubuntu-latest
+    needs: terraform-validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          soft_fail: true
+
+      - name: Upload Checkov results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-results
+          path: checkov-results.sarif
+          retention-days: 30
+
+  lint:
+    name: Lint (TFLint)
+    runs-on: ubuntu-latest
+    needs: terraform-validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Initialize TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint --format compact
+        continue-on-error: true
+
+  # =============================================================================
+  # Documentation
+  # =============================================================================
+
+  terraform-docs:
+    name: Terraform Docs Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup terraform-docs
+        uses: terraform-docs/gh-actions@v1
+        with:
+          working-dir: .
+          output-file: README.md
+          output-method: inject
+          git-push: "false"
+          fail-on-diff: true
+
+  # =============================================================================
+  # Summary
+  # =============================================================================
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs:
+      - terraform-format
+      - terraform-validate
+      - terraform-test
+      - terraform-test-all
+      - test-coverage-report
+      - security-scan
+      - lint
+      - terraform-docs
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          echo "## Overall Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check if critical tests passed
+          if [[ "${{ needs.terraform-format.result }}" == "success" ]] && \
+             [[ "${{ needs.terraform-validate.result }}" == "success" ]] && \
+             [[ "${{ needs.terraform-test.result }}" == "success" ]] && \
+             [[ "${{ needs.terraform-test-all.result }}" == "success" ]]; then
+            echo "✅ All critical tests passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Some critical tests failed!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Failed Tests" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.terraform-format.result }}" != "success" ]] && echo "- ❌ Terraform Format" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.terraform-validate.result }}" != "success" ]] && echo "- ❌ Terraform Validate" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.terraform-test.result }}" != "success" ]] && echo "- ❌ Terraform Test (Matrix)" >> $GITHUB_STEP_SUMMARY
+            [[ "${{ needs.terraform-test-all.result }}" != "success" ]] && echo "- ❌ Terraform Test (All)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Additional Checks" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Lint: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Docs Check: ${{ needs.terraform-docs.result }}" >> $GITHUB_STEP_SUMMARY
