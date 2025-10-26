@@ -298,7 +298,7 @@ Type: `string`
 
 ### <a name="input_monitored_services"></a> [monitored\_services](#input\_monitored\_services)
 
-Description: A map of service names to thier resource ids that should be configured to send diagnostics to log analytics.
+Description: A map of service names to their resource ids that should be configured to send diagnostics to log analytics.
 
 Type:
 
@@ -316,7 +316,27 @@ No optional inputs.
 
 ## Outputs
 
-No outputs.
+The following outputs are exported:
+
+### <a name="output_diagnostic_setting_ids"></a> [diagnostic\_setting\_ids](#output\_diagnostic\_setting\_ids)
+
+Description: Map of diagnostic setting IDs keyed by service name
+
+### <a name="output_diagnostic_setting_names"></a> [diagnostic\_setting\_names](#output\_diagnostic\_setting\_names)
+
+Description: Map of diagnostic setting names keyed by service name
+
+### <a name="output_diagnostics"></a> [diagnostics](#output\_diagnostics)
+
+Description: Map of all diagnostic settings with their full configuration
+
+### <a name="output_monitored_services_summary"></a> [monitored\_services\_summary](#output\_monitored\_services\_summary)
+
+Description: Summary of monitored services configuration including enabled log categories
+
+### <a name="output_total_diagnostic_settings"></a> [total\_diagnostic\_settings](#output\_total\_diagnostic\_settings)
+
+Description: Total number of diagnostic settings configured
 
 ## Resources
 
@@ -337,7 +357,7 @@ The following requirements are needed by this module:
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.41)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (3.117.1)
 
 ## Modules
 
