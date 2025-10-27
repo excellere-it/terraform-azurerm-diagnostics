@@ -349,9 +349,9 @@ The following resources are used by this module:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.3)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.13)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.41)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.47)
 
 ## Providers
 
