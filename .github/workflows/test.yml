@@ -112,6 +112,11 @@ jobs:
           - default
           - include
           - storage
+    env:
+      ARM_CLIENT_ID: ${{ secrets.INFOEX_SBX_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.INFOEX_SBX_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.INFOEX_SBX_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.INFOEX_SBX_SUBSCRIPTION_ID }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
