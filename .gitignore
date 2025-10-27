@@ -335,3 +335,4 @@ NOTES.md
 !LICENSE
 !LICENSE.md
 !LICENSE.txt
+.terraform.lock.hcl
