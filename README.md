@@ -286,78 +286,42 @@ module "example" {
 }
 ```
 
-## Required Inputs
+## Inputs
 
-The following input variables are required:
-
-### <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id)
-
-Description: The workspace to write logs into.
-
-Type: `string`
-
-### <a name="input_monitored_services"></a> [monitored\_services](#input\_monitored\_services)
-
-Description: A map of service names to their resource ids that should be configured to send diagnostics to log analytics.
-
-Type:
-
-```hcl
-map(object({
-    id      = string
-    table   = optional(string)
-    include = optional(list(string), [])
-  }))
-```
-
-## Optional Inputs
-
-No optional inputs.
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#input\_log\_analytics\_workspace\_id) | The workspace to write logs into. | `string` | n/a | yes |
+| <a name="input_monitored_services"></a> [monitored\_services](#input\_monitored\_services) | A map of service names to their resource ids that should be configured to send diagnostics to log analytics. | <pre>map(object({<br/>    id      = string<br/>    table   = optional(string)<br/>    include = optional(list(string), [])<br/>  }))</pre> | n/a | yes |
 
 ## Outputs
 
-The following outputs are exported:
-
-### <a name="output_diagnostic_setting_ids"></a> [diagnostic\_setting\_ids](#output\_diagnostic\_setting\_ids)
-
-Description: Map of diagnostic setting IDs keyed by service name
-
-### <a name="output_diagnostic_setting_names"></a> [diagnostic\_setting\_names](#output\_diagnostic\_setting\_names)
-
-Description: Map of diagnostic setting names keyed by service name
-
-### <a name="output_diagnostics"></a> [diagnostics](#output\_diagnostics)
-
-Description: Map of all diagnostic settings with their full configuration
-
-### <a name="output_monitored_services_summary"></a> [monitored\_services\_summary](#output\_monitored\_services\_summary)
-
-Description: Summary of monitored services configuration including enabled log categories
-
-### <a name="output_total_diagnostic_settings"></a> [total\_diagnostic\_settings](#output\_total\_diagnostic\_settings)
-
-Description: Total number of diagnostic settings configured
+| Name | Description |
+|------|-------------|
+| <a name="output_diagnostic_setting_ids"></a> [diagnostic\_setting\_ids](#output\_diagnostic\_setting\_ids) | Map of diagnostic setting IDs keyed by service name |
+| <a name="output_diagnostic_setting_names"></a> [diagnostic\_setting\_names](#output\_diagnostic\_setting\_names) | Map of diagnostic setting names keyed by service name |
+| <a name="output_diagnostics"></a> [diagnostics](#output\_diagnostics) | Map of all diagnostic settings with their full configuration |
+| <a name="output_monitored_services_summary"></a> [monitored\_services\_summary](#output\_monitored\_services\_summary) | Summary of monitored services configuration including enabled log categories |
+| <a name="output_total_diagnostic_settings"></a> [total\_diagnostic\_settings](#output\_total\_diagnostic\_settings) | Total number of diagnostic settings configured |
 
 ## Resources
 
-The following resources are used by this module:
-
-- [azurerm_monitor_diagnostic_setting.setting](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
-- [azurerm_monitor_diagnostic_categories.categories](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/monitor_diagnostic_categories) (data source)
+| Name | Type |
+|------|------|
+| [azurerm_monitor_diagnostic_setting.setting](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) | resource |
+| [azurerm_monitor_diagnostic_categories.categories](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/monitor_diagnostic_categories) | data source |
 
 ## Requirements
 
-The following requirements are needed by this module:
-
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.13)
-
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.47)
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.13 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.47 |
 
 ## Providers
 
-The following providers are used by this module:
-
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (3.117.1)
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 3.117.1 |
 
 ## Modules
 
