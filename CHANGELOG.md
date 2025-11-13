@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2025-01-13
+
+### Fixed
+- Resolved "for_each value depends on resource attributes" error by removing conditional filter from map keys
+- Added lifecycle precondition to validate resources have at least one log category or metric
+- Provides clear error message when attempting to enable diagnostics on unsupported resources
+- Fixes "Invalid for_each argument" error when resources are created in same apply
+
 ## [0.0.6] - 2025-01-13
 
 ### Fixed
