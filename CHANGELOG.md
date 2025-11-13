@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2025-01-13
+
+### Fixed
+- Added `try()` function to handle cases where diagnostic categories data source doesn't return logs attribute
+- Fixes compatibility with Log Analytics Workspaces and other resources that may not have log categories
+
+## [0.0.4] - 2025-01-13
+
 ### Added
 - Migrated to Terraform native testing framework (HCL) from Go/Terratest
 - Comprehensive GitHub Actions CI/CD workflow (test.yml)
