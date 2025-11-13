@@ -93,12 +93,15 @@ locals {
   # For each service, extract only the log categories that match the include filter
   # If include is empty, all log categories are selected
   # Use try() to handle cases where logs attribute doesn't exist (e.g., Log Analytics Workspaces)
+  # Only include services that have at least one log category OR at least one metric available
+  # This prevents creating diagnostic settings with no enabled logs or metrics (which Azure rejects)
   selected_categories = { for k, v in data.azurerm_monitor_diagnostic_categories.categories :
     k => {
       id    = var.monitored_services[k].id
       table = var.monitored_services[k].table
       logs  = [for l in try(v.logs, []) : l if contains(var.monitored_services[k].include, l) || length(var.monitored_services[k].include) == 0]
     }
+    if length([for l in try(v.logs, []) : l if contains(var.monitored_services[k].include, l) || length(var.monitored_services[k].include) == 0]) > 0 || length(try(v.metrics, [])) > 0
   }
 }
 

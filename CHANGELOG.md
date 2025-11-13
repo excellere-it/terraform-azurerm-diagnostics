@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2025-01-13
+
+### Fixed
+- Filter out diagnostic settings that would have no logs AND no metrics
+- Prevents "Missing required argument" error when Azure resources have no available diagnostic categories
+- Resolves issue with NSG and other resources that may have empty log/metric categories
+
 ## [0.0.5] - 2025-01-13
 
 ### Fixed
